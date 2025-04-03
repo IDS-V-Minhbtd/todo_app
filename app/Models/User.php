@@ -41,4 +41,12 @@ class User extends Authenticatable
     protected $casts = [
         'email_verified_at' => 'datetime',
     ];
+
+    /**
+     * Quan hệ 1-n: Một User có nhiều Todos.
+     */
+    public function todos()
+    {
+        return $this->hasMany(Todo::class);
+    }
 }
