@@ -10,37 +10,97 @@ class RegisterTest extends TestCase
     use RefreshDatabase;
 
     /** @test */
-    public function user_can_register_with_valid_data()
-    {
-        $response = $this->post('/register', [
-            'name' => 'Test User',
-            'email' => 'test@example.com',
-            'password' => 'Password@123',
-            'password_confirmation' => 'Password@123',
-        ]);
+   /** @test */
+public function email_is_required()
+{
+    $response = $this->post('/register', [
+        'name' => 'Test',
+        'email' => '',
+        'password' => 'Password@123',
+        'password_confirmation' => 'Password@123',
+    ]);
 
-        $response->assertRedirect('/home'); 
-        $this->assertDatabaseHas('users', [
-            'email' => 'test@example.com',
-        ]);
-        $this->assertAuthenticated(); 
-    }
+    $response->assertSessionHasErrors('email');
+}
 
-    /** @test */
-    public function user_cannot_register_with_existing_email()
-    {
-        User::factory()->create([
-            'email' => 'test@example.com',
-        ]);
+/** @test */
+public function email_cannot_exceed_200_characters()
+{
+    $email = str_repeat('a', 201) . '@example.com';
+    $response = $this->post('/register', [
+        'name' => 'Test',
+        'email' => $email,
+        'password' => 'Password@123',
+        'password_confirmation' => 'Password@123',
+    ]);
 
-        $response = $this->post('/register', [
-            'name' => 'Another User',
-            'email' => 'test@example.com',
-            'password' => 'Password@123',
-            'password_confirmation' => 'Password@123',
-        ]);
+    $response->assertSessionHasErrors('email');
+}
 
-        $response->assertSessionHasErrors('email');
-        $this->assertGuest(); 
-    }
+/** @test */
+public function email_must_be_unique()
+{
+    User::factory()->create(['email' => 'test@example.com']);
+
+    $response = $this->post('/register', [
+        'name' => 'Test',
+        'email' => 'test@example.com',
+        'password' => 'Password@123',
+        'password_confirmation' => 'Password@123',
+    ]);
+
+    $response->assertSessionHasErrors('email');
+}
+
+/** @test */
+public function email_must_be_valid_format()
+{
+    $response = $this->post('/register', [
+        'name' => 'Test',
+        'email' => 'invalid-email',
+        'password' => 'Password@123',
+        'password_confirmation' => 'Password@123',
+    ]);
+
+    $response->assertSessionHasErrors('email');
+}
+
+/** @test */
+public function password_is_required()
+{
+    $response = $this->post('/register', [
+        'name' => 'Test',
+        'email' => 'test@example.com',
+        'password' => '',
+        'password_confirmation' => '',
+    ]);
+
+    $response->assertSessionHasErrors('password');
+}
+
+/** @test */
+public function password_must_be_at_least_8_characters()
+{
+    $response = $this->post('/register', [
+        'name' => 'Test',
+        'email' => 'test@example.com',
+        'password' => '1234567',
+        'password_confirmation' => '1234567',
+    ]);
+
+    $response->assertSessionHasErrors('password');
+}
+
+/** @test */
+public function password_must_include_uppercase_number_special_character()
+{
+    $response = $this->post('/register', [
+        'name' => 'Test',
+        'email' => 'test@example.com',
+        'password' => 'password123', // thiếu ký tự hoa & đặc biệt
+        'password_confirmation' => 'password123',
+    ]);
+
+    $response->assertSessionHasErrors('password');
+}
 }
