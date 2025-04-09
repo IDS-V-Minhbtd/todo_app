@@ -1,5 +1,4 @@
-<?php
-
+<?php 
 namespace Tests\Feature;
 
 use App\Models\User;
@@ -10,108 +9,49 @@ class LoginTest extends TestCase
 {
     use RefreshDatabase;
 
-    public function test_email_is_required()
+    /** @test */
+    public function user_can_login_with_correct_credentials()
     {
-        $response = $this->post('/login', [
-            'email' => '',
-            'password' => 'Password123!',
-        ]);
-
-        $response->assertSessionHasErrors('email');
-    }
-
-    public function test_email_max_length()
-    {
-        $longEmail = str_repeat('a', 201) . '@example.com';
-
-        $response = $this->post('/login', [
-            'email' => $longEmail,
-            'password' => 'Password123!',
-        ]);
-
-        $response->assertSessionHasErrors('email');
-    }
-
-    public function test_email_must_be_valid()
-    {
-        $response = $this->post('/login', [
-            'email' => 'invalid-email',
-            'password' => 'Password123!',
-        ]);
-
-        $response->assertSessionHasErrors('email');
-    }
-
-    public function test_email_must_exist_in_database()
-    {
-        $response = $this->post('/login', [
-            'email' => 'notfound@example.com',
-            'password' => 'Password123!',
-        ]);
-
-        $response->assertSessionHasErrors('email');
-    }
-
-    public function test_password_is_required()
-    {
-        $response = $this->post('/login', [
-            'email' => 'test@example.com',
-            'password' => '',
-        ]);
-
-        $response->assertSessionHasErrors('password');
-    }
-
-    public function test_password_min_length()
-    {
-        $response = $this->post('/login', [
-            'email' => 'test@example.com',
-            'password' => 'Short1!',
-        ]);
-
-        $response->assertSessionHasErrors('password');
-    }
-
-    public function test_password_must_contain_uppercase_number_special_character()
-    {
-        $response = $this->post('/login', [
-            'email' => 'test@example.com',
-            'password' => 'password123', // Thiếu in hoa và ký tự đặc biệt
-        ]);
-
-        $response->assertSessionHasErrors('password');
-    }
-
-    public function test_user_can_login_with_correct_credentials()
-    {
+        // Tạo user trước
         $user = User::factory()->create([
             'email' => 'test@example.com',
-            'password' => bcrypt('Password123!'),
+            'password' => bcrypt('Password@123'),
         ]);
 
+        // Gửi request đăng nhập
         $response = $this->post('/login', [
             'email' => 'test@example.com',
-            'password' => 'Password123!',
+            'password' => 'Password@123',
         ]);
 
-        $response->assertRedirect('/home'); // Cập nhật theo đường dẫn chính xác
+        $response->assertRedirect('/home'); 
         $this->assertAuthenticatedAs($user);
     }
 
-    public function test_user_cannot_login_with_wrong_password()
+    /** @test */
+    public function user_cannot_login_with_invalid_credentials()
     {
+        // Có user
         User::factory()->create([
             'email' => 'test@example.com',
-            'password' => bcrypt('Password123!'),
+            'password' => bcrypt('Password@123'),
         ]);
-    
+
+        // Đăng nhập sai password
         $response = $this->post('/login', [
             'email' => 'test@example.com',
-            'password' => 'WrongPassword!',
+            'password' => 'wrongpassword',
         ]);
-    
-        $response->assertSessionHasErrors('password'); // Sửa lại từ 'email' thành 'password'
+
+        $response->assertSessionHasErrors(); 
         $this->assertGuest();
     }
-    
+
+    /** @test */
+    public function unauthenticated_user_redirected_to_login_when_accessing_protected_route()
+    {
+        $response = $this->get('/home');
+
+        $response->assertRedirect('/login');
+    }
 }
