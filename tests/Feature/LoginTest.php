@@ -9,7 +9,7 @@ class LoginTest extends TestCase
 {
     use RefreshDatabase;
 
-    /** @test */
+    /** @test với thông tin đăng nhập đúng */
     public function user_can_login_with_correct_credentials()
     {
         // Tạo user trước
@@ -28,7 +28,7 @@ class LoginTest extends TestCase
         $this->assertAuthenticatedAs($user);
     }
 
-    /** @test */
+    /** @test  với thông tin đăng nhập sai */
     public function user_cannot_login_with_invalid_credentials()
     {
         // Có user
@@ -47,7 +47,7 @@ class LoginTest extends TestCase
         $this->assertGuest();
     }
 
-    /** @test */
+    /** @test  với không có thông tin đăng nhập */
     public function unauthenticated_user_redirected_to_login_when_accessing_protected_route()
     {
         $response = $this->get('/home');
