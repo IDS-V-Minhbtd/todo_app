@@ -44,6 +44,7 @@ class RegisterRequest extends FormRequest
             'email.required' => 'Email là bắt buộc.',
             'email.email' => 'Email không đúng định dạng.',
             'email.unique' => 'Email đã tồn tại.',
+            'email.max' => 'Email không được vượt quá 200 ký tự.',
             'password.required' => 'Mật khẩu là bắt buộc.',
             'password.min' => 'Mật khẩu phải có ít nhất 8 ký tự.',
             'password.regex' => 'Mật khẩu phải bao gồm ít nhất một chữ cái in hoa, một số và một ký tự đặc biệt.',

@@ -8,7 +8,12 @@ use Tests\TestCase;
 class RegisterTest extends TestCase
 {
     use RefreshDatabase;
+    protected function setUp(): void //setup du lieu
+    {
+        parent::setUp();
+    }
 
+    
     /** @test email là bắt buộc*/
     public function email_is_required()
     {
@@ -18,7 +23,7 @@ class RegisterTest extends TestCase
             'password' => 'Password@123',
             'password_confirmation' => 'Password@123',
         ]);
-
+        $response->assertStatus(302); // Kiểm tra mã trạng thái HTTP
         $response->assertSessionHasErrors(['email' => 'Email là bắt buộc.']);
     }
 
@@ -32,8 +37,8 @@ class RegisterTest extends TestCase
             'password' => 'Password@123',
             'password_confirmation' => 'Password@123',
         ]);
-
-        $response->assertSessionHasErrors(['email' => 'The email must not be greater than 200 characters.']);
+        $response->assertStatus(302);
+        $response->assertSessionHasErrors(['email' => 'Email không được vượt quá 200 ký tự.']);
     }
 
     /** @test email bị trùng*/
@@ -47,7 +52,7 @@ class RegisterTest extends TestCase
             'password' => 'Password@123',
             'password_confirmation' => 'Password@123',
         ]);
-
+        $response->assertStatus(302);
         $response->assertSessionHasErrors(['email' => 'Email đã tồn tại.']);
     }
 
@@ -60,7 +65,7 @@ class RegisterTest extends TestCase
             'password' => 'Password@123',
             'password_confirmation' => 'Password@123',
         ]);
-
+        $response->assertStatus(302); // Kiểm tra mã trạng thái HTTP
         $response->assertSessionHasErrors(['email' => 'Email không đúng định dạng.']);
     }
 
@@ -96,7 +101,7 @@ class RegisterTest extends TestCase
         $response = $this->post('/register', [
             'name' => 'Test',
             'email' => 'test@example.com',
-            'password' => 'password123', // thiếu ký tự hoa & đặc biệt
+            'password' => 'password123', 
             'password_confirmation' => 'password123',
         ]);
 
