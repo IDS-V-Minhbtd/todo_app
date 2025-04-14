@@ -13,16 +13,8 @@ class Todo extends Model
         'user_id',
         'title',
         'description',
-        'is_completed',
         'deadline',
         'priority',
+        'is_completed',
     ];
-
-    /**
-     * Liên kết Todo với User (Mỗi Todo thuộc về một User).
-     */
-    public function user()
-    {
-        return $this->belongsTo(User::class);
-    }
 }

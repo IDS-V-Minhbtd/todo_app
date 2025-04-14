@@ -8,13 +8,19 @@
 
 @section('content')
     <div class="card">
-        <div class="card-header">
+        <div class="card-header d-flex justify-content-between align-items-center">
             <a href="{{ route('todos.create') }}" class="btn btn-primary">Thêm công việc</a>
+            <form method="GET" action="{{ route('todos.index') }}">
+                <input type="text" name="search" placeholder="Search todos..." value="{{ request('search') }}">
+                <button type="submit">Search</button>
+            </form>
         </div>
+
         <div class="card-body">
             @if(session('success'))
                 <div class="alert alert-success">{{ session('success') }}</div>
             @endif
+
             <table class="table table-bordered">
                 <thead>
                     <tr>
@@ -26,7 +32,7 @@
                     </tr>
                 </thead>
                 <tbody>
-                    @foreach($todos as $todo)
+                    @forelse($todos as $todo)
                         <tr>
                             <td>{{ $todo->title }}</td>
                             <td>{{ $todo->deadline ? \Carbon\Carbon::parse($todo->deadline)->format('d/m/Y') : 'Không có' }}</td>
@@ -43,6 +49,7 @@
                             <td>
                                 <a href="{{ route('todos.show', $todo->id) }}" class="btn btn-info btn-sm">Xem</a>
                                 <a href="{{ route('todos.edit', $todo->id) }}" class="btn btn-warning btn-sm">Sửa</a>
+
                                 <form action="{{ route('todos.update-status', $todo->id) }}" method="POST" style="display:inline;">
                                     @csrf
                                     @method('PATCH')
@@ -51,6 +58,7 @@
                                         {{ $todo->is_completed ? 'Đánh dấu chưa xong' : 'Đánh dấu hoàn thành' }}
                                     </button>
                                 </form>
+
                                 <form action="{{ route('todos.destroy', $todo->id) }}" method="POST" style="display:inline;">
                                     @csrf
                                     @method('DELETE')
@@ -58,7 +66,11 @@
                                 </form>
                             </td>
                         </tr>
-                    @endforeach
+                    @empty
+                        <tr>
+                            <td colspan="5">Không có công việc nào.</td>
+                        </tr>
+                    @endforelse
                 </tbody>
             </table>
         </div>

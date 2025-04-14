@@ -7,6 +7,7 @@ use App\Models\Todo;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Http\Request;
 use Carbon\Carbon;
+use Illuminate\Support\Facades\Log; // Add this at the top of the file
 
 class TodoController extends Controller
 {
@@ -16,9 +17,16 @@ class TodoController extends Controller
         $this->middleware('checkTodoOwner')->only(['show', 'edit', 'update', 'destroy']); 
     }
 
-    public function index()
+    public function index(Request $request)
     {
-        $todos = Todo::where('user_id', Auth::id())->orderBy('priority', 'desc')->get();
+        $query = Todo::where('user_id', Auth::id());
+
+        if ($request->has('search') && $request->search) {
+            $query->where('title', 'like', '%' . $request->search . '%');
+        }
+
+        $todos = $query->orderBy('priority', 'desc')->get();
+
         return view('todos.index', compact('todos'));
     }
 
@@ -61,7 +69,7 @@ class TodoController extends Controller
             'deadline' => Carbon::parse($request->deadline), 
             'priority' => $request->priority,
         ]);
-
+        Log::debug('>>> Đã vào được hàm search!');
         return redirect()->route('todos.index')->with('success', 'Công việc đã được cập nhật!');
     }
 
@@ -83,4 +91,5 @@ class TodoController extends Controller
 
         return redirect()->route('todos.index')->with('success', 'Trạng thái công việc đã được cập nhật!');
     }
+    
 }

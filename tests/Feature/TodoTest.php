@@ -150,5 +150,24 @@ public function user_can_update_todo()
         'is_completed' => 0, 
     ]);
 }
+    /**@test chuc nang tim kiem todo */
+    public function user_can_search_todo()
+    {
+        // Tạo một todo cho người dùng
+        $todo = Todo::factory()->create([
+            'user_id' => $this->user->id,
+            'title' => 'Test Todo',
+            'description' => 'This is a test todo.',
+            'is_completed' => false,
+            'deadline' => now()->addDays(7),
+            'priority' => 'medium',
+        ]);
+
+        // Gửi request với từ khóa tìm kiếm
+        $response = $this->actingAs($this->user)->get('/todos?search=Test');
+
+        $response->assertStatus(200); // Trả về thành công
+        $response->assertSee($todo->title); // Kiểm tra xem tiêu đề todo có trong phản hồi không
+    }
 
 }
