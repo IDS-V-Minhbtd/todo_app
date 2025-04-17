@@ -53,6 +53,7 @@ class TodoTest extends TestCase
     {
         // Gửi request với tư cách user đã đăng nhập
         $response = $this->actingAs($this->user)->get('/todos');
+
         $response->assertStatus(200); // Trả về thành công
         $response->assertViewHas('todos'); // View có biến todos
     }
@@ -161,6 +162,16 @@ public function user_can_update_todo()
             'deadline' => now()->addDays(7),
             'priority' => 'medium',
         ]);
+<<<<<<< HEAD
+
+        // Gửi request với từ khóa tìm kiếm
+        $response = $this->actingAs($this->user)->get('/todos?search=Test');
+
+        $response->assertStatus(200); // Trả về thành công
+        $response->assertSee($todo->title); // Kiểm tra xem tiêu đề todo có trong phản hồi không
+    }
+=======
+>>>>>>> ca20d44 (thêm unit test cho register)
 
         // Gửi request với từ khóa tìm kiếm
         $response = $this->actingAs($this->user)->get('/todos?search=Test');
