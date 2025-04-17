@@ -53,7 +53,6 @@ class TodoTest extends TestCase
     {
         // Gửi request với tư cách user đã đăng nhập
         $response = $this->actingAs($this->user)->get('/todos');
-
         $response->assertStatus(200); // Trả về thành công
         $response->assertViewHas('todos'); // View có biến todos
     }
