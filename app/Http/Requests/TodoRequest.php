@@ -7,15 +7,15 @@ use Illuminate\Foundation\Http\FormRequest;
 class TodoRequest extends FormRequest
 {
     /**
-     * Xác nhận xem user có quyền gửi request không.
+     * Determine if the user is authorized to make this request.
      */
     public function authorize(): bool
     {
-        return true; // Cho phép tất cả user đã đăng nhập
+        return true; // Allow all authenticated users
     }
 
     /**
-     * Định nghĩa rules validation.
+     * Get the validation rules that apply to the request.
      */
     public function rules(): array
     {
@@ -24,6 +24,7 @@ class TodoRequest extends FormRequest
             'description' => 'nullable|string',
             'deadline' => 'nullable|date',
             'priority' => 'required|in:low,medium,high',
+            'is_completed' => 'nullable|boolean',
         ];
     }
 }

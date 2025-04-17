@@ -27,7 +27,10 @@ Route::get('/home', [App\Http\Controllers\HomeController::class, 'index'])->name
 Route::middleware(['auth'])->group(function () {
     Route::resource('todos', TodoController::class);
     Route::patch('todos/{todo}/update-status', [TodoController::class, 'updateStatus'])->name('todos.update-status');
+    Route::get('/todos/search', [TodoController::class, 'search'])->name('todos.search');
 });
+
+
 
 Route::post('/login', [LoginController::class, 'login'])->name('login');
 Route::post('/logout', [LoginController::class, 'logout'])->name('logout');

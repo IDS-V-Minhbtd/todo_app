@@ -3,30 +3,23 @@
 namespace App\Http\Controllers;
 
 use App\Http\Requests\TodoRequest;
-use App\Models\Todo;
-use Illuminate\Support\Facades\Auth;
+use App\Services\TodoService;
 use Illuminate\Http\Request;
-use Carbon\Carbon;
-use Illuminate\Support\Facades\Log; // Add this at the top of the file
 
 class TodoController extends Controller
 {
-    public function __construct()
+    protected $todoService;
+
+    public function __construct(TodoService $todoService)
     {
-        $this->middleware('auth'); 
-        $this->middleware('checkTodoOwner')->only(['show', 'edit', 'update', 'destroy']); 
+        $this->middleware('auth');
+        $this->middleware('checkTodoOwner')->only(['show', 'edit', 'update', 'destroy']);
+        $this->todoService = $todoService;
     }
 
     public function index(Request $request)
     {
-        $query = Todo::where('user_id', Auth::id());
-
-        if ($request->has('search') && $request->search) {
-            $query->where('title', 'like', '%' . $request->search . '%');
-        }
-
-        $todos = $query->orderBy('priority', 'desc')->get();
-
+        $todos = $this->todoService->getTodosForCurrentUser($request->search);
         return view('todos.index', compact('todos'));
     }
 
@@ -37,59 +30,50 @@ class TodoController extends Controller
 
     public function store(TodoRequest $request)
     {
-        Todo::create([
-            'user_id' => Auth::id(),
-            'title' => $request->title,
-            'description' => $request->description,
-            'deadline' => Carbon::parse($request->deadline), // Ensure deadline is a Carbon instance
-            'priority' => $request->priority,
-        ]);
-
+        $this->todoService->createTodoForCurrentUser($request->validated());
         return redirect()->route('todos.index')->with('success', 'Công việc đã được thêm!');
     }
 
-    public function show(Todo $todo)
+    public function show($id)
     {
-        
+        $todo = $this->todoService->getTodoById($id);
         return view('todos.show', compact('todo'));
     }
 
-    public function edit(Todo $todo)
+    public function edit($id)
     {
-        
+        $todo = $this->todoService->getTodoById($id);
         return view('todos.edit', compact('todo'));
     }
 
-    public function update(TodoRequest $request, Todo $todo)
+    public function update(TodoRequest $request, $id)
     {
-        
-        $todo->update([
-            'title' => $request->title,
-            'description' => $request->description,
-            'deadline' => Carbon::parse($request->deadline), 
-            'priority' => $request->priority,
-        ]);
-        Log::debug('>>> Đã vào được hàm search!');
+        $this->todoService->updateTodo($id, $request->validated());
         return redirect()->route('todos.index')->with('success', 'Công việc đã được cập nhật!');
     }
 
-    public function destroy(Todo $todo)
+    public function destroy($id)
     {
-        $todo->delete();
-
+        $this->todoService->deleteTodoById($id);
         return redirect()->route('todos.index')->with('success', 'Công việc đã được xóa!');
     }
 
-    public function updateStatus(Todo $todo, Request $request)
+    public function updateStatus(Request $request, $id)
     {
-        $request->validate([
-            'is_completed' => 'required|boolean',
-        ]);
+        $isUpdated = $this->todoService->updateTodoStatus($id, $request->input('is_completed', false));
 
-        $todo->is_completed = $request->is_completed;
-        $todo->save();
+        if (!$isUpdated) {
+            return redirect()->route('todos.index')->with('error', 'Todo not found.');
+        }
 
-        return redirect()->route('todos.index')->with('success', 'Trạng thái công việc đã được cập nhật!');
+        return redirect()->route('todos.index')->with('success', 'Todo status updated successfully!');
     }
-    
+
+    public function search(Request $request)
+    {
+        $search = $request->input('search');
+        $todos = $this->todoService->searchTodosForCurrentUser($search);
+
+        return view('todos.index', compact('todos'));
+    }
 }

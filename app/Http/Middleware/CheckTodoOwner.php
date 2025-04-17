@@ -16,7 +16,11 @@ class CheckTodoOwner
     {
         $todo = $request->route('todo'); // Lấy Todo từ route
 
-        if ($todo && $todo->user_id !== Auth::id()) {
+        if (is_string($todo)) {
+            $todo = \App\Models\Todo::find($todo); 
+        }
+
+        if (!$todo || $todo->user_id !== Auth::id()) {
             abort(403, 'Bạn không có quyền thực hiện thao tác này.');
         }
 
