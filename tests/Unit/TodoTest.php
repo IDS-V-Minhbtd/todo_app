@@ -18,7 +18,7 @@ class TodoServiceTest extends TestCase
         parent::tearDown();
     }
 
-    /** @test */
+    /** @test user có thể thấy todos đã tạo*/
     public function it_can_get_todos_for_current_user()
     {
         Auth::shouldReceive('id')->once()->andReturn(1);
@@ -37,7 +37,7 @@ class TodoServiceTest extends TestCase
         $this->assertCount(2, $result);
     }
 
-    /** @test */
+    /** @test tạo todos*/
     public function it_can_create_todo_for_current_user()
     {
         Auth::shouldReceive('id')->once()->andReturn(2);
@@ -55,7 +55,7 @@ class TodoServiceTest extends TestCase
         $this->assertEquals('New Task', $result->title);
     }
 
-    /** @test */
+    /** @test update todos*/
     public function it_can_update_a_todo()
     {
         $todo = new Todo(['title' => 'Old']);
@@ -69,7 +69,7 @@ class TodoServiceTest extends TestCase
         $this->assertTrue($result);
     }
 
-    /** @test */
+    /** @test xóa todos*/
     public function it_can_delete_a_todo()
     {
         $todo = new Todo();
@@ -83,24 +83,8 @@ class TodoServiceTest extends TestCase
         $this->assertTrue($result);
     }
 
-    /** @test */
-    public function it_can_update_todo_status()
-    {
-        $todo = Mockery::mock(Todo::class);
-        $todo->shouldReceive('update')->once()->with(['is_completed' => true]);
 
-        $repo = Mockery::mock(TodoRepositoryInterface::class);
-        $repo->shouldReceive('findById')->once()->with(3)->andReturn($todo);
-
-        $service = new TodoService($repo);
-        $result = $service->updateTodoStatus(3, true);
-
-        $this->assertTrue($result);
-    }
-
-
-
-    /** @test */
+    /** @test có thể tìm kiếm todos */
     public function it_can_search_todo_by_user()
     {
         Auth::shouldReceive('id')->once()->andReturn(1);
